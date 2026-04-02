@@ -29,18 +29,7 @@ async function salvarNoSupabase(d) {
         return { error: 'SDK do Supabase não carregado corretamente' };
     }
     
-    // Verificação extra de duplicidade antes de inserir
-    const { data: existente, error: erroBusca } = await supabaseClient
-        .from('agendamentos')
-        .select('id')
-        .eq('data', d.data)
-        .eq('hora', d.hora)
-        .maybeSingle();
-
-    if (existente) {
-        return { error: 'Este horário acabou de ser preenchido por outra pessoa. Por favor, escolha outro.' };
-    }
-
+    // Tenta inserir diretamente. O banco vai barrar se já existir (devido ao UNIQUE constraint)
     const { data, error } = await supabaseClient
         .from('agendamentos')
         .insert([
@@ -55,7 +44,14 @@ async function salvarNoSupabase(d) {
             }
         ]);
     
-    return { data, error };
+    if (error) {
+        if (error.code === '23505') { // Código de erro do Postgres para violação de UNIQUE
+            return { error: 'Este horário já foi reservado por outro cliente. Por favor, escolha outro horário.' };
+        }
+        return { error: error.message };
+    }
+    
+    return { data, error: null };
 }
 document.querySelectorAll('.tabs a').forEach(l=>{l.addEventListener('click',e=>{const href=l.getAttribute('href');if(href==='#booking'){e.preventDefault();openModal();return}e.preventDefault();const t=document.querySelector(href);t&&t.scrollIntoView({behavior:'smooth'})})});
 const headerLogo=document.querySelector('.logo');
