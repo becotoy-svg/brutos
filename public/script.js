@@ -3,15 +3,30 @@ const navLinks=document.querySelectorAll('.nav a');
 // Configuração Supabase (Substitua pelos seus dados do Dashboard do Supabase)
 const SUPABASE_URL = '';
 const SUPABASE_ANON_KEY = '';
-const supabaseClient = (window.supabase && SUPABASE_URL) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+let supabaseClient = null;
+
+function initSupabase() {
+    if (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+}
+
+// Inicializa quando o script carrega
+initSupabase();
 
 navLinks.forEach(l=>{l.addEventListener('click',e=>{const href=l.getAttribute('href');if(href==='#booking'){e.preventDefault();openModal();return}e.preventDefault();const t=document.querySelector(href);t&&t.scrollIntoView({behavior:'smooth'})})});
 
 // Função para salvar agendamento no Supabase
 async function salvarNoSupabase(d) {
+    // Tenta inicializar novamente caso o SDK tenha demorado a carregar
+    if (!supabaseClient) initSupabase();
+
     if (!supabaseClient) {
         console.error('Supabase não inicializado');
-        return { error: 'SDK do Supabase não carregado' };
+        if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+            return { error: 'Configuração do Supabase ausente (URL ou Key vazias no script.js)' };
+        }
+        return { error: 'SDK do Supabase não carregado corretamente' };
     }
     
     // Verificação extra de duplicidade antes de inserir
