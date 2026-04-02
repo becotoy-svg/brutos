@@ -1,8 +1,8 @@
 const navLinks=document.querySelectorAll('.nav a');
 
 // Configuração Supabase (Substitua pelos seus dados do Dashboard do Supabase)
-const SUPABASE_URL = '';
-const SUPABASE_ANON_KEY = '';
+const SUPABASE_URL = 'https://ssyedgimddfajnjsouff.supabase.co';
+const SUPABASE_ANON_KEY = 'ssyedgimddfajnjsouff';
 let supabaseClient = null;
 
 function initSupabase() {
