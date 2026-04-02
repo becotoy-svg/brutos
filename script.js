@@ -1,5 +1,35 @@
 const navLinks=document.querySelectorAll('.nav a');
+
+// Configuração Supabase (Substitua pelos seus dados do Dashboard do Supabase)
+const SUPABASE_URL = 'https://SUA_URL.supabase.co';
+const SUPABASE_ANON_KEY = 'SUA_CHAVE_ANON';
+const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
 navLinks.forEach(l=>{l.addEventListener('click',e=>{const href=l.getAttribute('href');if(href==='#booking'){e.preventDefault();openModal();return}e.preventDefault();const t=document.querySelector(href);t&&t.scrollIntoView({behavior:'smooth'})})});
+
+// Função para salvar agendamento no Supabase
+async function salvarNoSupabase(d) {
+    if (!supabase) {
+        console.error('Supabase não inicializado');
+        return { error: 'SDK do Supabase não carregado' };
+    }
+    
+    const { data, error } = await supabase
+        .from('agendamentos')
+        .insert([
+            { 
+                nome: d.nome, 
+                telefone: d.telefone, 
+                servico: d.servico, 
+                data: d.data, 
+                hora: d.hora,
+                funcionario: employeeSelect.value || 'Sem preferência',
+                status: 'pendente'
+            }
+        ]);
+    
+    return { data, error };
+}
 document.querySelectorAll('.tabs a').forEach(l=>{l.addEventListener('click',e=>{const href=l.getAttribute('href');if(href==='#booking'){e.preventDefault();openModal();return}e.preventDefault();const t=document.querySelector(href);t&&t.scrollIntoView({behavior:'smooth'})})});
 const headerLogo=document.querySelector('.logo');
 headerLogo&&headerLogo.addEventListener('error',()=>{headerLogo.style.display='none'});
@@ -112,23 +142,43 @@ changeServiceBtn.addEventListener('click',()=>{serviceSelectEl.scrollIntoView({b
 function corpoMensagem(d){
 return 'Nome: '+d.nome+'\nTelefone: '+d.telefone+'\nServiço: '+d.servico+'\nData: '+d.data+'\nHora: '+d.hora+'\nFuncionário: '+(employeeSelect.value||'Sem preferência');
 }
-modalEmailBtn.addEventListener('click',()=>{
+modalEmailBtn.addEventListener('click', async ()=>{
 const d=textoAgendamento();
 if(!valido(d)){atualizarStatus('Preencha todos os campos e selecione um horário.');return}
+
+atualizarStatus('Salvando agendamento...');
+const { error } = await salvarNoSupabase(d);
+
+if (error) {
+    console.error('Erro ao salvar no Supabase:', error);
+    atualizarStatus('Erro ao salvar no banco. Tentando e-mail...');
+} else {
+    atualizarStatus('Agendamento salvo com sucesso!');
+}
+
 const assunto=encodeURIComponent('Agendamento - Barbearia Brutos Black');       
 const corpo=encodeURIComponent(corpoMensagem(d));
 const url='mailto:'+EMAIL_DESTINO+'?subject='+assunto+'&body='+corpo;
 window.location.href=url;
-atualizarStatus('Agendamento preparado no e-mail.');
 });
-modalWhatsBtn.addEventListener('click',()=>{
+modalWhatsBtn.addEventListener('click', async ()=>{
 const d=textoAgendamento();
 if(!valido(d)){atualizarStatus('Preencha todos os campos e selecione um horário.');return}
+
+atualizarStatus('Salvando agendamento...');
+const { error } = await salvarNoSupabase(d);
+
+if (error) {
+    console.error('Erro ao salvar no Supabase:', error);
+    atualizarStatus('Erro ao salvar no banco. Tentando WhatsApp...');
+} else {
+    atualizarStatus('Agendamento salvo com sucesso!');
+}
+
 if(!WHATSAPP_NUMERO){atualizarStatus('Configure o número do WhatsApp no código.');return}
 const msg=encodeURIComponent('Agendamento - Barbearia Brutos Black%0A'+corpoMensagem(d).replace(/\n/g,'%0A'));
 const url='https://wa.me/'+WHATSAPP_NUMERO+'?text='+msg;
 window.open(url,'_blank');
-atualizarStatus('Abrindo WhatsApp...');
 });
 
 /* envio pela seção de página removido; usando envio pelo modal */
