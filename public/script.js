@@ -14,6 +14,18 @@ async function salvarNoSupabase(d) {
         return { error: 'SDK do Supabase não carregado' };
     }
     
+    // Verificação extra de duplicidade antes de inserir
+    const { data: existente, error: erroBusca } = await supabaseClient
+        .from('agendamentos')
+        .select('id')
+        .eq('data', d.data)
+        .eq('hora', d.hora)
+        .maybeSingle();
+
+    if (existente) {
+        return { error: 'Este horário acabou de ser preenchido por outra pessoa. Por favor, escolha outro.' };
+    }
+
     const { data, error } = await supabaseClient
         .from('agendamentos')
         .insert([
@@ -225,15 +237,18 @@ modalWhatsBtn.addEventListener('click', async ()=>{
     if(!confirmacao) return;
 
     atualizarStatus('Salvando agendamento...');
-    const { error } = await salvarNoSupabase(d);
+    const resultado = await salvarNoSupabase(d);
 
-    if (error) {
-        console.error('Erro ao salvar no Supabase:', error);
-        atualizarStatus('Erro ao salvar no banco. Tentando WhatsApp...');
-    } else {
-        atualizarStatus('✅ Agendamento salvo com sucesso!');
-        alert('✅ Agendamento realizado com sucesso e salvo no sistema!');
-    }
+    if (resultado.error) {
+        console.error('Erro ao salvar no Supabase:', resultado.error);
+        alert('❌ ' + resultado.error);
+        atualizarStatus('❌ Erro: ' + resultado.error);
+        renderModalSlots(); // Atualiza a lista para mostrar o horário como ocupado
+        return;
+    } 
+    
+    atualizarStatus('✅ Agendamento salvo com sucesso!');
+    alert('✅ Agendamento realizado com sucesso e salvo no sistema!');
 
     const msgText = '💈 *NOVO AGENDAMENTO - BRUTOS BLACK* 💈\n\n' + 
         '👤 *Cliente:* ' + d.nome + '\n' +
