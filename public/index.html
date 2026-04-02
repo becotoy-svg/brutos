@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Barbearia Brutos Black</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="header">
+<div class="brand"><img class="logo" src="assets/logo.svg" alt="Barbearia Brutos Black" decoding="async">Barbearia Brutos Black</div>
+<nav class="nav">
+<a href="#home">Início</a>
+<a href="#booking">Agendamento</a>
+<a href="#services">Serviços</a>
+<a href="#location">Localização</a>
+</nav>
+</header>
+<main>
+<section id="home" class="section hero">
+<h1>Bem-vindo à Barbearia Brutos Black!</h1>
+<p>Aqui você encontra cortes modernos, atendimento personalizado e um ambiente agradável.</p>
+<p>Agende seu horário de forma rápida e prática pelo nosso site!</p>
+<a href="#booking" class="btn" id="cta-book">Agendar agora</a>
+</section>
+
+<nav class="tabs">
+<a href="#services">Serviços</a>
+<a href="#booking">Agendar</a>
+<a href="#about">Sobre</a>
+<a href="#reviews">Avaliações</a>
+<a href="#gallery">Galeria</a>
+</nav>
+
+<!-- seção de serviços será reposicionada abaixo do agendamento -->
+
+<!-- Seção de agendamento removida; fluxo consolidado no modal -->
+
+<div id="booking-modal" class="modal-overlay" hidden>
+<div class="modal">
+<button class="modal-close" id="modal-close" aria-label="Fechar">×</button>     
+<div class="modal-header">
+<button class="icon-btn" id="prev-week">‹</button>
+<div class="month-title" id="month-title"></div>
+<button class="icon-btn" id="next-week">›</button>
+</div>
+<div class="day-chips" id="day-chips"></div>
+<div class="period-tabs" id="period-tabs">
+<button class="pill" data-period="morning">Manhã</button>
+<button class="pill" data-period="afternoon">Tarde</button>
+<button class="pill" data-period="evening">Noite</button>
+</div>
+<div id="modal-slot-grid" class="slot-grid"></div>
+<div class="service-select" id="service-select"></div>
+<div class="summary">
+<div class="service-row">
+<div class="service-info">
+<div id="selected-service">Serviço</div>
+<div class="meta"><span id="selected-duration"></span></div>
+</div>
+<div class="price" id="selected-price"></div>
+<button class="btn secondary small" id="change-service">Alterar</button>        
+</div>
+<label>Funcionário
+<select id="employee-select">
+<option value="">Sem preferência</option>
+<option value="Leandro">Leandro</option>
+<option value="Douglas">Douglas</option>
+</select>
+</label>
+<div class="total">Total: <span id="total-price">R$ 0,00</span></div>
+</div>
+<div class="grid">
+<label>Nome completo
+<input type="text" id="modal-name" required>
+</label>
+<label>Telefone
+<input type="tel" id="modal-phone" required>
+</label>
+</div>
+<div id="modal-status" class="status" aria-live="polite"></div>
+<div class="actions-row">
+<button class="btn large" id="modal-email-btn">Enviar por E‑mail</button>       
+<button class="btn secondary large" id="modal-whats-btn">Enviar via WhatsApp</button>
+</div>
+</div>
+</div>
+
+<section id="services" class="section">
+<h2>Serviços</h2>
+<div class="cards">
+<div class="card">
+<h3>Corte Masculino</h3>
+<p>Corte com estilo e acabamento cuidadoso.</p>
+<div class="meta">Duração: 45 min</div>
+<div class="actions"><button class="btn small" type="button" data-service="Corte Masculino">Agendar</button><span class="price">R$ XX</span></div>
+</div>
+<div class="card">
+<h3>Barba</h3>
+<p>Modelagem e hidratação para a barba.</p>
+<div class="meta">Duração: 30 min</div>
+<div class="actions"><button class="btn small" type="button" data-service="Barba">Agendar</button><span class="price">R$ XX</span></div>
+</div>
+<div class="card">
+<h3>Corte Infantil</h3>
+<p>Cuidado especial para os pequenos.</p>
+<div class="meta">Duração: 30 min</div>
+<div class="actions"><button class="btn small" type="button" data-service="Corte Infantil">Agendar</button><span class="price">R$ XX</span></div>
+</div>
+<div class="card">
+<h3>Combo Corte + Barba</h3>
+<p>Pacote completo com preço especial.</p>
+<div class="meta">Duração: 75 min</div>
+<div class="actions"><button class="btn small" type="button" data-service="Combo Corte + Barba">Agendar</button><span class="price">R$ XX</span></div>
+</div>
+</div>
+</section>
+
+<section id="location" class="section">
+<h2>Localização</h2>
+<p>Nosso endereço: Av Dom Helder Câmara, nº 6295, 6295, 20771-002, Rio de Janeiro</p>
+<div class="map-wrap">
+<iframe id="map" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://www.google.com/maps?q=Av%20Dom%20Helder%20C%C3%A2mara%2C%20n%C2%BA%206295%2C%206295%2C%2020771-002%2C%20Rio%20de%20Janeiro&output=embed"></iframe>     
+</div>
+<p>Confira no mapa acima como chegar até nós.</p>
+</section>
+
+<section id="about" class="section">
+<h2>Sobre</h2>
+<p>Barbearia Brutos Black oferece experiência premium com profissionais qualificados e ambiente moderno.</p>
+<p>Horário de funcionamento: Segunda a Sábado, 09:00 — 19:00. Domingo fechado.</p>
+</section>
+
+<section id="reviews" class="section">
+<h2>Avaliações</h2>
+<div class="cards">
+<div class="card"><h3>★★★★★</h3><p>Atendimento top e corte impecável.</p><div class="meta">João S.</div></div>
+<div class="card"><h3>★★★★★</h3><p>Ambiente agradável e pontualidade.</p><div class="meta">Marcos A.</div></div>
+<div class="card"><h3>★★★★☆</h3><p>Ótimo custo-benefício.</p><div class="meta">Pedro C.</div></div>
+</div>
+</section>
+
+<section id="gallery" class="section">
+<h2>Galeria</h2>
+<div class="gallery">
+<div class="ph"></div><div class="ph"></div><div class="ph"></div>
+<div class="ph"></div><div class="ph"></div><div class="ph"></div>
+</div>
+</section>
+</main>
+<footer class="footer">
+<p>&copy; Barbearia Brutos Black</p>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="script.js"></script>
+</body>
+</html>

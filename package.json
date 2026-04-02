@@ -1,5 +1,12 @@
 {
+  "name": "brutos",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "serve .",
+    "build": "if not exist public mkdir public && xcopy assets public\\assets\\ /E /I /Y && copy index.html public\\ && copy style.css public\\ && copy script.js public\\"
+  },
   "dependencies": {
-    "@supabase/supabase-js": "^2.101.1"
+    "@supabase/supabase-js": "^2.101.1",
+    "serve": "^14.2.6"
   }
 }
