@@ -235,19 +235,32 @@ modalWhatsBtn.addEventListener('click', async ()=>{
         alert('✅ Agendamento realizado com sucesso e salvo no sistema!');
     }
 
-    const msg=encodeURIComponent('💈 *NOVO AGENDAMENTO - BRUTOS BLACK* 💈\n\n' + 
+    const msgText = '💈 *NOVO AGENDAMENTO - BRUTOS BLACK* 💈\n\n' + 
         '👤 *Cliente:* ' + d.nome + '\n' +
         '📞 *Telefone:* ' + d.telefone + '\n' +
         '✂️ *Serviço:* ' + d.servico + '\n' +
         '📅 *Data:* ' + d.data.split('-').reverse().join('/') + '\n' +
         '⏰ *Hora:* ' + d.hora + '\n' +
         '🧔 *Barbeiro:* ' + (employeeSelect.value || 'Sem preferência') + '\n\n' +
-        '✅ _Agendamento salvo automaticamente no banco de dados._');
+        '✅ _Agendamento salvo automaticamente no banco de dados._';
 
-    const url='https://wa.me/'+WHATSAPP_NUMERO+'?text='+msg;
-    window.open(url,'_blank');
+    const msgEncoded = encodeURIComponent(msgText);
+
+    // Detecção de dispositivo para escolher entre WhatsApp Web ou App
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    let url;
+    if (isMobile) {
+        // Abre o App do WhatsApp no Mobile
+        url = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMERO}&text=${msgEncoded}`;
+    } else {
+        // Abre o WhatsApp Web no Desktop
+        url = `https://web.whatsapp.com/send?phone=${WHATSAPP_NUMERO}&text=${msgEncoded}`;
+    }
+
+    window.open(url, '_blank');
     closeModal(); 
-    renderModalSlots(); // Atualiza a grade para bloquear o horário recém marcado
+    renderModalSlots(); 
 });
 
 /* envio pela seção de página removido; usando envio pelo modal */
