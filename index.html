@@ -3,26 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barbearia Brutos</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #121212;
-            color: #ffffff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-        }
-        h1 {
-            color: #d4af37;
-        }
-    </style>
+    <title>Barbearia Brutos | Tradição e Estilo</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <h1>Barbearia Brutos</h1>
-    <p>Site em construção...</p>
+    <header>
+        <nav>
+            <div class="logo">BRUTOS</div>
+            <ul>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#servicos">Serviços</a></li>
+                <li><a href="#sobre">Sobre</a></li>
+                <li><a href="#contato">Contato</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="home" class="hero">
+            <div class="hero-content">
+                <h1>BARBEARIA BRUTOS</h1>
+                <p>Onde o estilo encontra a tradição. O cuidado que você merece, com a brutalidade que você respeita.</p>
+                <a href="#contato" class="btn">Agende seu Horário</a>
+            </div>
+        </section>
+
+        <section id="servicos" class="services">
+            <h2>Nossos Serviços</h2>
+            <div class="service-grid">
+                <div class="service-card">
+                    <h3>Corte Clássico</h3>
+                    <p>O corte tradicional feito com tesoura e máquina, finalizado com navalha.</p>
+                    <span>R$ 45,00</span>
+                </div>
+                <div class="service-card">
+                    <h3>Barba Completa</h3>
+                    <p>Modelagem, hidratação e toalha quente para uma barba impecável.</p>
+                    <span>R$ 35,00</span>
+                </div>
+                <div class="service-card">
+                    <h3>Combo Brutos</h3>
+                    <p>Corte + Barba com um desconto especial para quem é bruto de verdade.</p>
+                    <span>R$ 70,00</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="sobre" class="about">
+            <div class="about-content">
+                <h2>Sobre Nós</h2>
+                <p>A Barbearia Brutos nasceu da paixão pela cutelaria e barbearia clássica. Aqui, não apenas cortamos cabelo; entregamos uma experiência de cuidado masculino em um ambiente autêntico e acolhedor.</p>
+            </div>
+        </section>
+
+        <section id="contato" class="contact">
+            <h2>Contato</h2>
+            <div class="contact-info">
+                <p>📍 Rua dos Brutos, 123 - Centro</p>
+                <p>📞 (11) 98765-4321</p>
+                <p>📧 contato@barbeariabrutos.com.br</p>
+            </div>
+            <div class="vercel-info">
+                <p>Acompanhe nosso projeto em:</p>
+                <a href="https://traebrutos0mwk-becotoy-svg-becotoys-projects.vercel.app" target="_blank">traebrutos0mwk.vercel.app</a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Barbearia Brutos - Todos os direitos reservados.</p>
+    </footer>
 </body>
 </html>
