@@ -35,11 +35,9 @@ const headerLogo=document.querySelector('.logo');
 headerLogo&&headerLogo.addEventListener('error',()=>{headerLogo.style.display='none'});
 
 const modalStatus=document.getElementById('modal-status');
-const EMAIL_DESTINO='seuemail@exemplo.com';
-const WHATSAPP_NUMERO='';
+const WHATSAPP_NUMERO='5521990039787'; // Número atualizado
 const modalName=document.getElementById('modal-name');
 const modalPhone=document.getElementById('modal-phone');
-const modalEmailBtn=document.getElementById('modal-email-btn');
 const modalWhatsBtn=document.getElementById('modal-whats-btn');
 const SCHEDULE={slotMinutes:30,start:'09:00',end:'19:00',closedWeekdays:[0]};   
 const MODAL=document.getElementById('booking-modal');
@@ -129,7 +127,63 @@ function renderPeriodTabs(){periodTabs.querySelectorAll('.pill').forEach(p=>p.cl
 periodTabs.addEventListener('click',e=>{const p=e.target.closest('.pill');if(!p)return;modalState.period=p.dataset.period;renderPeriodTabs();renderModalSlots()});
 
 function periodRange(){if(modalState.period==='morning')return ['09:00','12:00'];if(modalState.period==='afternoon')return ['12:00','17:00'];return ['17:00','19:00']}
-function renderModalSlots(){modalSlotGrid.innerHTML='';const date=new Date(modalState.selectedDay);if(isClosed(date)){return}const [ps,pe]=periodRange();const start=Math.max(toMinutes(SCHEDULE.start),toMinutes(ps));const end=Math.min(toMinutes(SCHEDULE.end),toMinutes(pe));const frag=document.createDocumentFragment();for(let m=start;m<end;m+=SCHEDULE.slotMinutes){const t=fromMinutes(m);const b=document.createElement('button');b.type='button';b.className='slot available';b.textContent=t;b.dataset.time=t;frag.appendChild(b)}modalSlotGrid.appendChild(frag)} 
+
+// Função para buscar horários ocupados no Supabase
+async function buscarHorariosOcupados(data) {
+    if (!supabaseClient) return [];
+    const { data: agendamentos, error } = await supabaseClient
+        .from('agendamentos')
+        .select('hora')
+        .eq('data', data);
+    
+    if (error) {
+        console.error('Erro ao buscar horários:', error);
+        return [];
+    }
+    return agendamentos.map(a => a.hora);
+}
+
+async function renderModalSlots(){
+    modalSlotGrid.innerHTML='<p style="grid-column: 1/-1; text-align: center;">Carregando horários...</p>';
+    const date=new Date(modalState.selectedDay);
+    if(isClosed(date)){
+        modalSlotGrid.innerHTML='<p style="grid-column: 1/-1; text-align: center;">Barbearia fechada neste dia.</p>';
+        return;
+    }
+
+    const ocupados = await buscarHorariosOcupados(modalState.selectedDay);
+    modalSlotGrid.innerHTML='';
+
+    const [ps,pe]=periodRange();
+    const start=Math.max(toMinutes(SCHEDULE.start),toMinutes(ps));
+    const end=Math.min(toMinutes(SCHEDULE.end),toMinutes(pe));
+    
+    const agora = new Date();
+    const hojeIso = agora.toISOString().slice(0,10);
+    const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
+
+    const frag=document.createDocumentFragment();
+    for(let m=start;m<end;m+=SCHEDULE.slotMinutes){
+        const t=fromMinutes(m);
+        const b=document.createElement('button');
+        b.type='button';
+        
+        // Regra 1: Horário já ocupado no banco
+        const estaOcupado = ocupados.includes(t);
+        // Regra 2: Horário já passou (se for hoje)
+        const jaPassou = (modalState.selectedDay === hojeIso && m <= minutosAgora);
+
+        b.className = (estaOcupado || jaPassou) ? 'slot unavailable' : 'slot available';
+        b.textContent=t;
+        b.dataset.time=t;
+        
+        if (estaOcupado) b.title = "Horário já reservado";
+        if (jaPassou) b.title = "Horário indisponível";
+
+        frag.appendChild(b);
+    }
+    modalSlotGrid.appendChild(frag);
+}
 modalSlotGrid.addEventListener('click',e=>{const t=e.target;if(!t.classList.contains('slot'))return;modalState.selectedSlot=t.dataset.time;modalSlotGrid.querySelectorAll('.slot').forEach(s=>s.classList.toggle('selected',s===t))});
 
 function setService(name){const d=SERVICE_DATA[name];selectedServiceEl.textContent=name;selectedDurationEl.textContent=d?d.duration+' min':'';selectedPriceEl.textContent=d?currency(d.price):'';modalState.selectedService=name;updateTotal();syncServiceRadios(name)}
@@ -142,43 +196,58 @@ changeServiceBtn.addEventListener('click',()=>{serviceSelectEl.scrollIntoView({b
 function corpoMensagem(d){
 return 'Nome: '+d.nome+'\nTelefone: '+d.telefone+'\nServiço: '+d.servico+'\nData: '+d.data+'\nHora: '+d.hora+'\nFuncionário: '+(employeeSelect.value||'Sem preferência');
 }
-modalEmailBtn.addEventListener('click', async ()=>{
-const d=textoAgendamento();
-if(!valido(d)){atualizarStatus('Preencha todos os campos e selecione um horário.');return}
-
-atualizarStatus('Salvando agendamento...');
-const { error } = await salvarNoSupabase(d);
-
-if (error) {
-    console.error('Erro ao salvar no Supabase:', error);
-    atualizarStatus('Erro ao salvar no banco. Tentando e-mail...');
-} else {
-    atualizarStatus('Agendamento salvo com sucesso!');
-}
-
-const assunto=encodeURIComponent('Agendamento - Barbearia Brutos Black');       
-const corpo=encodeURIComponent(corpoMensagem(d));
-const url='mailto:'+EMAIL_DESTINO+'?subject='+assunto+'&body='+corpo;
-window.location.href=url;
-});
 modalWhatsBtn.addEventListener('click', async ()=>{
-const d=textoAgendamento();
-if(!valido(d)){atualizarStatus('Preencha todos os campos e selecione um horário.');return}
+    const d=textoAgendamento();
+    
+    // Validação obrigatória
+    if(!d.nome || !d.telefone){
+        atualizarStatus('⚠️ Por favor, preencha Nome e Telefone.');
+        alert('Por favor, preencha seu nome e telefone para continuar.');
+        return;
+    }
+    
+    if(!d.data || !d.hora){
+        atualizarStatus('⚠️ Selecione um horário disponível.');
+        return;
+    }
 
-atualizarStatus('Salvando agendamento...');
-const { error } = await salvarNoSupabase(d);
+    // Confirmação dos dados
+    const confirmacao = confirm(
+        `Confirme seus dados para o agendamento:\n\n` +
+        `👤 Nome: ${d.nome}\n` +
+        `📞 Telefone: ${d.telefone}\n` +
+        `✂️ Serviço: ${d.servico}\n` +
+        `📅 Data: ${d.data.split('-').reverse().join('/')}\n` +
+        `⏰ Hora: ${d.hora}\n\n` +
+        `Deseja finalizar o agendamento?`
+    );
 
-if (error) {
-    console.error('Erro ao salvar no Supabase:', error);
-    atualizarStatus('Erro ao salvar no banco. Tentando WhatsApp...');
-} else {
-    atualizarStatus('Agendamento salvo com sucesso!');
-}
+    if(!confirmacao) return;
 
-if(!WHATSAPP_NUMERO){atualizarStatus('Configure o número do WhatsApp no código.');return}
-const msg=encodeURIComponent('Agendamento - Barbearia Brutos Black%0A'+corpoMensagem(d).replace(/\n/g,'%0A'));
-const url='https://wa.me/'+WHATSAPP_NUMERO+'?text='+msg;
-window.open(url,'_blank');
+    atualizarStatus('Salvando agendamento...');
+    const { error } = await salvarNoSupabase(d);
+
+    if (error) {
+        console.error('Erro ao salvar no Supabase:', error);
+        atualizarStatus('Erro ao salvar no banco. Tentando WhatsApp...');
+    } else {
+        atualizarStatus('✅ Agendamento salvo com sucesso!');
+        alert('✅ Agendamento realizado com sucesso e salvo no sistema!');
+    }
+
+    const msg=encodeURIComponent('💈 *NOVO AGENDAMENTO - BRUTOS BLACK* 💈\n\n' + 
+        '👤 *Cliente:* ' + d.nome + '\n' +
+        '📞 *Telefone:* ' + d.telefone + '\n' +
+        '✂️ *Serviço:* ' + d.servico + '\n' +
+        '📅 *Data:* ' + d.data.split('-').reverse().join('/') + '\n' +
+        '⏰ *Hora:* ' + d.hora + '\n' +
+        '🧔 *Barbeiro:* ' + (employeeSelect.value || 'Sem preferência') + '\n\n' +
+        '✅ _Agendamento salvo automaticamente no banco de dados._');
+
+    const url='https://wa.me/'+WHATSAPP_NUMERO+'?text='+msg;
+    window.open(url,'_blank');
+    closeModal(); 
+    renderModalSlots(); // Atualiza a grade para bloquear o horário recém marcado
 });
 
 /* envio pela seção de página removido; usando envio pelo modal */

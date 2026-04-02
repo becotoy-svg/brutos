@@ -35,11 +35,9 @@ const headerLogo=document.querySelector('.logo');
 headerLogo&&headerLogo.addEventListener('error',()=>{headerLogo.style.display='none'});
 
 const modalStatus=document.getElementById('modal-status');
-const EMAIL_DESTINO='seuemail@exemplo.com';
-const WHATSAPP_NUMERO='5521964015542'; // Número do dono configurado
+const WHATSAPP_NUMERO='5521990039787'; // Número atualizado
 const modalName=document.getElementById('modal-name');
 const modalPhone=document.getElementById('modal-phone');
-const modalEmailBtn=document.getElementById('modal-email-btn');
 const modalWhatsBtn=document.getElementById('modal-whats-btn');
 const SCHEDULE={slotMinutes:30,start:'09:00',end:'19:00',closedWeekdays:[0]};   
 const MODAL=document.getElementById('booking-modal');
@@ -198,54 +196,58 @@ changeServiceBtn.addEventListener('click',()=>{serviceSelectEl.scrollIntoView({b
 function corpoMensagem(d){
 return 'Nome: '+d.nome+'\nTelefone: '+d.telefone+'\nServiço: '+d.servico+'\nData: '+d.data+'\nHora: '+d.hora+'\nFuncionário: '+(employeeSelect.value||'Sem preferência');
 }
-modalEmailBtn.addEventListener('click', async ()=>{
-const d=textoAgendamento();
-if(!valido(d)){atualizarStatus('Preencha todos os campos e selecione um horário.');return}
-
-atualizarStatus('Salvando agendamento...');
-const { error } = await salvarNoSupabase(d);
-
-if (error) {
-    console.error('Erro ao salvar no Supabase:', error);
-    atualizarStatus('Erro ao salvar no banco. Tentando e-mail...');
-} else {
-    atualizarStatus('Agendamento salvo com sucesso!');
-}
-
-const assunto=encodeURIComponent('Agendamento - Barbearia Brutos Black');       
-const corpo=encodeURIComponent(corpoMensagem(d));
-const url='mailto:'+EMAIL_DESTINO+'?subject='+assunto+'&body='+corpo;
-window.location.href=url;
-});
 modalWhatsBtn.addEventListener('click', async ()=>{
-const d=textoAgendamento();
-if(!valido(d)){atualizarStatus('Preencha todos os campos e selecione um horário.');return}
+    const d=textoAgendamento();
+    
+    // Validação obrigatória
+    if(!d.nome || !d.telefone){
+        atualizarStatus('⚠️ Por favor, preencha Nome e Telefone.');
+        alert('Por favor, preencha seu nome e telefone para continuar.');
+        return;
+    }
+    
+    if(!d.data || !d.hora){
+        atualizarStatus('⚠️ Selecione um horário disponível.');
+        return;
+    }
 
-atualizarStatus('Salvando agendamento...');
-const { error } = await salvarNoSupabase(d);
+    // Confirmação dos dados
+    const confirmacao = confirm(
+        `Confirme seus dados para o agendamento:\n\n` +
+        `👤 Nome: ${d.nome}\n` +
+        `📞 Telefone: ${d.telefone}\n` +
+        `✂️ Serviço: ${d.servico}\n` +
+        `📅 Data: ${d.data.split('-').reverse().join('/')}\n` +
+        `⏰ Hora: ${d.hora}\n\n` +
+        `Deseja finalizar o agendamento?`
+    );
 
-if (error) {
-    console.error('Erro ao salvar no Supabase:', error);
-    atualizarStatus('Erro ao salvar no banco. Tentando WhatsApp...');
-} else {
-    atualizarStatus('Agendamento salvo com sucesso!');
-    // Confirmação visual para o usuário
-    alert('✅ Agendamento realizado com sucesso e salvo no sistema!');
-}
+    if(!confirmacao) return;
 
-if(!WHATSAPP_NUMERO){atualizarStatus('Configure o número do WhatsApp no código.');return}
-const msg=encodeURIComponent('💈 *NOVO AGENDAMENTO - BRUTOS BLACK* 💈\n\n' + 
-    '👤 *Cliente:* ' + d.nome + '\n' +
-    '📞 *Telefone:* ' + d.telefone + '\n' +
-    '✂️ *Serviço:* ' + d.servico + '\n' +
-    '📅 *Data:* ' + d.data.split('-').reverse().join('/') + '\n' +
-    '⏰ *Hora:* ' + d.hora + '\n' +
-    '🧔 *Barbeiro:* ' + (employeeSelect.value || 'Sem preferência') + '\n\n' +
-    '✅ _Agendamento salvo automaticamente no banco de dados._');
+    atualizarStatus('Salvando agendamento...');
+    const { error } = await salvarNoSupabase(d);
 
-const url='https://wa.me/'+WHATSAPP_NUMERO+'?text='+msg;
-window.open(url,'_blank');
-closeModal(); // Fecha o modal após o sucesso
+    if (error) {
+        console.error('Erro ao salvar no Supabase:', error);
+        atualizarStatus('Erro ao salvar no banco. Tentando WhatsApp...');
+    } else {
+        atualizarStatus('✅ Agendamento salvo com sucesso!');
+        alert('✅ Agendamento realizado com sucesso e salvo no sistema!');
+    }
+
+    const msg=encodeURIComponent('💈 *NOVO AGENDAMENTO - BRUTOS BLACK* 💈\n\n' + 
+        '👤 *Cliente:* ' + d.nome + '\n' +
+        '📞 *Telefone:* ' + d.telefone + '\n' +
+        '✂️ *Serviço:* ' + d.servico + '\n' +
+        '📅 *Data:* ' + d.data.split('-').reverse().join('/') + '\n' +
+        '⏰ *Hora:* ' + d.hora + '\n' +
+        '🧔 *Barbeiro:* ' + (employeeSelect.value || 'Sem preferência') + '\n\n' +
+        '✅ _Agendamento salvo automaticamente no banco de dados._');
+
+    const url='https://wa.me/'+WHATSAPP_NUMERO+'?text='+msg;
+    window.open(url,'_blank');
+    closeModal(); 
+    renderModalSlots(); // Atualiza a grade para bloquear o horário recém marcado
 });
 
 /* envio pela seção de página removido; usando envio pelo modal */
