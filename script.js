@@ -1,13 +1,26 @@
 const navLinks=document.querySelectorAll('.nav a');
 
 // Configuração Supabase (Substitua pelos seus dados do Dashboard do Supabase)
-const SUPABASE_URL = 'https://ssyedgimddfajnjsouff.supabase.co';
-const SUPABASE_ANON_KEY = 'ssyedgimddfajnjsouff';
+// Para desenvolvimento local, o URL costuma ser http://localhost:54321
+const SUPABASE_URL = 'https://lgkfgqmzxsjapxjhprlk.supabase.co'; // Substitua pelo URL do seu projeto Supabase
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxna2ZncW16eHNqYXB4amhwcmxrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNDE2NjUsImV4cCI6MjA5MDcxNzY2NX0.mjvE45WLFX5kM2qqp8RFnHnUmYQuJf7aO6CTRN0GfV0'; // Substitua pela sua ANON KEY do Supabase
 let supabaseClient = null;
 
+function isPlaceholderSupabaseKey(key) {
+    if (!key) return true;
+    const k = String(key).trim();
+    if (!k) return true;
+    if (k.includes('seu-valor')) return true;
+    if (k.startsWith('sb_')) return true;
+    if (k === 'YOUR_SUPABASE_ANON_KEY') return true;
+    return false;
+}
+
 function initSupabase() {
-    if (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY) {
+    if (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY && !isPlaceholderSupabaseKey(SUPABASE_ANON_KEY)) {
         supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } else {
+        console.warn('Supabase: URL ou Key ainda não configurados corretamente.');
     }
 }
 
@@ -23,8 +36,8 @@ async function salvarNoSupabase(d) {
 
     if (!supabaseClient) {
         console.error('Supabase não inicializado');
-        if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-            return { error: 'Configuração do Supabase ausente (URL ou Key vazias no script.js)' };
+        if (!SUPABASE_URL || !SUPABASE_ANON_KEY || isPlaceholderSupabaseKey(SUPABASE_ANON_KEY)) {
+            return { error: 'A configuração do Supabase no script.js está incompleta. Verifique se as chaves SUPABASE_URL e SUPABASE_ANON_KEY foram preenchidas corretamente.' };
         }
         return { error: 'SDK do Supabase não carregado corretamente' };
     }
@@ -58,7 +71,6 @@ const headerLogo=document.querySelector('.logo');
 headerLogo&&headerLogo.addEventListener('error',()=>{headerLogo.style.display='none'});
 
 const modalStatus=document.getElementById('modal-status');
-const WHATSAPP_NUMERO='5521990039787'; // Número atualizado
 const modalName=document.getElementById('modal-name');
 const modalPhone=document.getElementById('modal-phone');
 const modalWhatsBtn=document.getElementById('modal-whats-btn');
@@ -216,9 +228,6 @@ if(!modalState.selectedService){const first=Object.keys(SERVICE_DATA)[0];setServ
 function syncServiceRadios(name){const r=serviceSelectEl.querySelectorAll('input[name="service-radio"]');r.forEach(el=>{el.checked=el.value===name})}
 changeServiceBtn.addEventListener('click',()=>{serviceSelectEl.scrollIntoView({behavior:'smooth'})});
 
-function corpoMensagem(d){
-return 'Nome: '+d.nome+'\nTelefone: '+d.telefone+'\nServiço: '+d.servico+'\nData: '+d.data+'\nHora: '+d.hora+'\nFuncionário: '+(employeeSelect.value||'Sem preferência');
-}
 modalWhatsBtn.addEventListener('click', async ()=>{
     const d=textoAgendamento();
     
@@ -261,30 +270,6 @@ modalWhatsBtn.addEventListener('click', async ()=>{
     atualizarStatus('✅ Agendamento salvo com sucesso!');
     alert('✅ Agendamento realizado com sucesso e salvo no sistema!');
 
-    const msgText = '💈 *NOVO AGENDAMENTO - BRUTOS BLACK* 💈\n\n' + 
-        '👤 *Cliente:* ' + d.nome + '\n' +
-        '📞 *Telefone:* ' + d.telefone + '\n' +
-        '✂️ *Serviço:* ' + d.servico + '\n' +
-        '📅 *Data:* ' + d.data.split('-').reverse().join('/') + '\n' +
-        '⏰ *Hora:* ' + d.hora + '\n' +
-        '🧔 *Barbeiro:* ' + (employeeSelect.value || 'Sem preferência') + '\n\n' +
-        '✅ _Agendamento salvo automaticamente no banco de dados._';
-
-    const msgEncoded = encodeURIComponent(msgText);
-
-    // Detecção de dispositivo para escolher entre WhatsApp Web ou App
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    
-    let url;
-    if (isMobile) {
-        // Abre o App do WhatsApp no Mobile
-        url = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMERO}&text=${msgEncoded}`;
-    } else {
-        // Abre o WhatsApp Web no Desktop
-        url = `https://web.whatsapp.com/send?phone=${WHATSAPP_NUMERO}&text=${msgEncoded}`;
-    }
-
-    window.open(url, '_blank');
     closeModal(); 
     renderModalSlots(); 
 });

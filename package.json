@@ -1,12 +1,24 @@
 {
-  "name": "brutos",
-  "version": "1.0.0",
+  "name": "brutos-nextjs",
+  "version": "0.1.0",
+  "private": true,
   "scripts": {
-    "start": "serve .",
-    "build": "if not exist public mkdir public && xcopy assets public\\assets\\ /E /I /Y && copy index.html public\\ && copy style.css public\\ && copy script.js public\\"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.101.1",
-    "serve": "^14.2.6"
+    "@supabase/supabase-js": "^2.42.0",
+    "next": "14.2.1",
+    "react": "^18",
+    "react-dom": "^18",
+    "lucide-react": "^0.363.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "typescript": "^5"
   }
 }
